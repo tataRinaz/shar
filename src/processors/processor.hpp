@@ -2,45 +2,51 @@
 
 #include <string>
 #include <atomic>
-#include <cassert>
 
 #include "logger.hpp"
 
 
 namespace shar {
 
-template<typename Process, typename Input, typename Output>
 class Processor {
 public:
-  Processor(std::string name, Logger logger, Input input, Output output)
-      : m_logger(std::move(logger))
-      , m_name(std::move(name))
-      , m_running(false)
-      , m_input(std::move(input))
-      , m_output(std::move(output)) {}
+  class Context {
+  public:
+    Context(std::string name, shar::Logger logger);
+    Context(const Context&) = default;
+    Context(Context&&) = default;
+    ~Context() = default;
 
-  Processor(Processor&& other)
-      : m_logger(std::move(other.m_logger))
-      , m_name(std::move(other.m_name))
-      , m_running(false)
-      , m_input(std::move(other.m_input))
-      , m_output(std::move(other.m_output)) {
-    assert(!other.m_running);
-  }
+    const std::string& name() const;
+    shar::Logger& logger();
 
-  ~Processor() {
-    if (!m_name.empty()) {
-      m_logger.info("{} destroyed", m_name);
-    }
-  }
+  private:
+    std::string  m_name;
+    shar::Logger m_logger;
+  };
 
-  void run() {
-    static_cast<Process*>(this)->setup();
-    start();
 
-    while (is_running()) {
-      if (auto item = m_input.receive()) {
-        static_cast<Process*>(this)->process(std::move(*item));
+  Processor(Context context);
+  Processor(Processor&& other);
+
+  template<typename Process>
+  void run(
+      typename Process::Context context,
+      typename Process::Receiver receiver,
+      typename Process::Sender sender
+  ) {
+    Process process {
+      std::move(context),
+      sender,
+      *this
+    };
+
+    m_running = true;
+    m_context.logger().info("{} started", m_context.name());
+
+    while (m_running && sender.connected() && receiver.connected()) {
+      if (auto item = receiver.receive()) {
+        process(std::move(*item));
       }
       else {
         // input channel was disconnected
@@ -48,51 +54,18 @@ public:
       }
     }
 
-    static_cast<Process*>(this)->teardown();
-    stop();
-    m_logger.info("{} finished", m_name);
-  }
-
-  bool is_running() const noexcept {
-    return m_running && m_input.connected() && m_output.connected();
-  }
-
-  void start() {
-    if (!m_running) {
-      m_logger.info("{} starting", m_name);
-    }
-    m_running = true;
-  }
-
-  void stop() {
-    if (m_running) {
-      m_logger.info("{} stopping", m_name);
-    }
+    // teardown is ~Process
     m_running = false;
+    m_context.logger().info("{} finished", m_context.name());
   }
 
-protected:
-  void setup() {}
-
-  void teardown() {}
-
-
-  Input& input() {
-    return m_input;
-  }
-
-  Output& output() {
-    return m_output;
-  }
-
-  Logger m_logger;
+  bool is_running() const;
+  void stop();
+  Context& context();
 
 private:
-  std::string       m_name;
+  Context           m_context;
   std::atomic<bool> m_running;
-
-  Input  m_input;
-  Output m_output;
 };
 
 }

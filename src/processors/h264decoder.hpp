@@ -1,22 +1,23 @@
 #pragma once
 
+#include "channels/bounded.hpp"
 #include "packet.hpp"
 #include "primitives/image.hpp"
 #include "processors/processor.hpp"
-#include "channels/bounded.hpp"
 #include "codecs/ffmpeg/decoder.hpp"
 
 
 namespace shar {
 
-using FramesSender = channel::Sender<Image>;
-using PacketsReceiver = channel::Receiver<Packet>;
-
-class H264Decoder : public Processor<H264Decoder, PacketsReceiver, FramesSender> {
+class H264Decoder : public Processor {
 public:
-  H264Decoder(Logger logger, PacketsReceiver input, FramesSender output);
+  struct Context{};
+  using Sender = channel::Sender<Image>;
+  using Receiver = channel::Receiver<Packet>;
 
-  void process(Packet packet);
+  H264Decoder(Processor::Context context);
+
+  void operator()(Packet packet, channel::Sender<Image>& output);
 
 private:
   codecs::ffmpeg::Decoder m_decoder;

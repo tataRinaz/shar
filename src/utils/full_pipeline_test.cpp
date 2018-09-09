@@ -86,14 +86,10 @@ int main() {
       std::move(decoded_frames_sender)
   );
 
-  using ImageSink = shar::channel::Sink<shar::Image>;
-  using Display = shar::FrameDisplay<ImageSink>;
-
-  Display display {
+  shar::FrameDisplay display {
       window,
       logger,
-      std::move(decoded_frames_receiver),
-      ImageSink {}
+      std::move(decoded_frames_receiver)
   };
 
   shar::Runner capture_runner {std::move(capture)};

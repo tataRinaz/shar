@@ -10,8 +10,6 @@
 
 
 int main() {
-  using FramesSink = shar::channel::Sink<shar::Image>;
-
   auto         logger = shar::Logger("play.log");
   shar::Size   size {1080, 1920};
   shar::Window window {size, logger};
@@ -29,7 +27,6 @@ int main() {
       window,
       logger,
       std::move(frames_receiver),
-      FramesSink {}
   };
 
   shar::Runner reader_runner {std::move(reader)};

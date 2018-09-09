@@ -4,15 +4,19 @@ add_executable(play
                ../texture.hpp
                ../window.cpp
                ../window.hpp
+               ../channels/bounded.hpp
+               ../processors/processor.hpp
                ../processors/frame_file_reader.cpp
                ../processors/frame_file_reader.hpp
+               ../processors/frame_display.cpp
+               ../processors/frame_display.hpp
                ../primitives/image.cpp
                ../primitives/image.hpp)
 
-target_include_directories(play 
+target_include_directories(play
                            PRIVATE ..
                            PRIVATE SYSTEM ${CONAN_INCLUDE_DIRS_SPDLOG}
-                          )
+                           )
 target_link_libraries(play
                       ${CONAN_LIBS_GLFW}
                       ${OPENGL_gl_LIBRARY}
@@ -23,6 +27,8 @@ target_compile_options(play PRIVATE ${ENABLED_WARNINGS})
 # recorder
 add_executable(record
                record.cpp
+               ../channels/bounded.hpp
+               ../processors/processor.hpp
                ../processors/screen_capture.cpp
                ../processors/screen_capture.hpp
                ../processors/frame_file_writer.cpp
@@ -34,13 +40,43 @@ add_executable(record
 target_include_directories(record
                            PRIVATE ..
                            PRIVATE SYSTEM ${CONAN_INCLUDE_DIRS_SPDLOG}
-                          )
+                           )
 target_link_libraries(record
                       ${CONAN_LIBS_SCREENCAPTURELITE}
                       ${SC_PLATFORM_LIBS}
                       ${CONAN_LIBS_FMT}
                       )
 target_compile_options(record PRIVATE ${ENABLED_WARNINGS})
+
+add_executable(chain-test
+               chain_test.cpp
+               ../logger.hpp
+               ../packet.hpp
+               ../packet.cpp
+               ../primitives/image.hpp
+               ../primitives/image.cpp
+               ../processors/processor.hpp
+               ../processors/processor.cpp
+               ../processors/h264decoder.hpp
+               ../processors/h264decoder.cpp
+               ../codecs/ffmpeg/decoder.hpp
+               ../codecs/ffmpeg/decoder.cpp
+               ../codecs/convert.hpp
+               ../codecs/convert.cpp
+               )
+target_include_directories(chain-test
+                           PRIVATE ..
+                           PRIVATE SYSTEM ${CONAN_INCLUDE_DIRS_BOOST}
+                           PRIVATE SYSTEM ${CONAN_INCLUDE_DIRS_SPDLOG})
+target_link_libraries(chain-test
+                      ${CONAN_LIBS_GLFW}
+                      ${CONAN_LIBS_BOOST}
+                      ${CONAN_LIBS_LIBX264}
+                      ${CONAN_LIBS_FMT}
+                      ${CONAN_LIBS_FFMPEG}
+                      )
+
+target_compile_options(chain-test PRIVATE ${ENABLED_WARNINGS})
 
 
 # full pipeline test
@@ -58,6 +94,8 @@ add_executable(pipeline_test
                ../codecs/ffmpeg/encoder.hpp
                ../codecs/ffmpeg/decoder.cpp
                ../codecs/ffmpeg/decoder.hpp
+               ../channels/bounded.hpp
+               ../processors/processor.hpp
                ../processors/screen_capture.cpp
                ../processors/screen_capture.hpp
                ../processors/h264encoder.cpp
@@ -68,6 +106,8 @@ add_executable(pipeline_test
                ../processors/packet_sender.hpp
                ../processors/packet_receiver.cpp
                ../processors/packet_receiver.hpp
+               ../processors/frame_display.cpp
+               ../processors/frame_display.cpp
                ../primitives/image.cpp
                ../primitives/image.hpp)
 

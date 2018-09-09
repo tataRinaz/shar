@@ -11,6 +11,8 @@ add_executable(server
                ../codecs/convert.hpp
                ../codecs/ffmpeg/encoder.cpp
                ../codecs/ffmpeg/encoder.hpp
+               ../channels/bounded.hpp
+               ../processors/processor.hpp
                ../processors/screen_capture.cpp
                ../processors/screen_capture.hpp
                ../processors/packet_sender.cpp

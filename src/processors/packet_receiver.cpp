@@ -63,19 +63,15 @@ std::vector<shar::Packet> PacketReceiver::PacketReader::update(const Buffer& buf
   return packets;
 }
 
-PacketReceiver::PacketReceiver(IpAddress server, Logger logger, PacketsSender output)
-    : Source("PacketReceiver", std::move(logger), std::move(output))
-    , m_reader()
+PacketReceiver::PacketReceiver(Context context, Processor& processor, Sender sender)
+    : m_reader()
     , m_buffer(4096, 0)
-    , m_server_address(server)
+    , m_server_address(context.ip)
     , m_context()
-    , m_receiver(m_context) {}
+    , m_receiver(m_context)
+    , m_sender(std::move(sender))
+    , m_processor(processor) {
 
-void PacketReceiver::process(FalseInput) {
-  m_context.run_for(std::chrono::milliseconds(250));
-}
-
-void PacketReceiver::setup() {
   using Endpoint = boost::asio::ip::tcp::endpoint;
   Endpoint endpoint {m_server_address, 1337};
   m_receiver.connect(endpoint);
@@ -83,26 +79,30 @@ void PacketReceiver::setup() {
   start_read();
 }
 
-void PacketReceiver::teardown() {
+PacketReceiver::~PacketReceiver() {
   // close the connection
   m_receiver.shutdown(boost::asio::socket_base::shutdown_both);
   m_receiver.close();
+
 }
 
+void PacketReceiver::operator()(bool) {
+  m_context.run_for(std::chrono::milliseconds(250));
+}
 
 void PacketReceiver::start_read() {
   m_receiver.async_read_some(
       boost::asio::buffer(m_buffer.data(), m_buffer.size()),
       [this](const boost::system::error_code& ec, std::size_t received) {
         if (ec) {
-          m_logger.error("Receiver failed: {}", ec.message());
-          Processor::stop();
+          m_processor.context().logger().error("Receiver failed: {}", ec.message());
+          m_processor.stop();
           return;
         }
 
         auto packets = m_reader.update(m_buffer, received);
         for (auto& packet: packets) {
-          output().send(std::move(packet));
+          m_sender.send(std::move(packet));
         }
 
         start_read();

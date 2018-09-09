@@ -17,7 +17,7 @@ static AVPixelFormat get_format(AVCodecContext* /*ctx*/, const enum AVPixelForma
       return *p;
     }
   }
-  spdlog::get("shar_logger")->error("YUV420 pixel format is not supported for this decoder");
+  spdlog::get("shar")->error("YUV420 pixel format is not supported for this decoder");
   return AV_PIX_FMT_NONE;
 }
 

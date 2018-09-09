@@ -17,7 +17,15 @@ namespace shar {
 
 using PacketsReceiver = channel::Receiver<Packet>;
 
-class PacketSender : public Sink<PacketSender, PacketsReceiver> {
+class PacketSender;
+
+template <>
+struct SinkTraits<PacketSender> {
+  using Input = Packet;
+  using InputChannel = channel::Receiver<Input>;
+};
+
+class PacketSender : public Sink<PacketSender> {
 public:
   using IpAddress = boost::asio::ip::address;
 

@@ -14,7 +14,18 @@ namespace shar {
 using FramesReceiver = channel::Receiver<Image>;
 using PacketsSender = channel::Sender<Packet>;
 
-class H264Encoder : public Processor<H264Encoder, FramesReceiver, PacketsSender> {
+class H264Encoder;
+
+template <>
+struct ProcessorTraits<H264Encoder> {
+  using Input = Image;
+  using InputChannel = channel::Receiver<Input>;
+
+  using Output = Packet;
+  using OutputChannel = channel::Sender<Output>;
+};
+
+class H264Encoder : public Processor<H264Encoder> {
 public:
   H264Encoder(Size frame_size, const std::size_t fps, const Config& config,
               Logger logger, FramesReceiver input, PacketsSender output);

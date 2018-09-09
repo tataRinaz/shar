@@ -53,8 +53,7 @@ private:
 
 }
 
-static int get_pts()
-{
+static int get_pts() {
   static int static_pts = 0;
   return static_pts++;
 }

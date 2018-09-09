@@ -21,7 +21,15 @@ struct FileParams {
 
 using FramesSender = channel::Sender<Image>;
 
-class FrameFileReader : public Source<FrameFileReader, FramesSender> {
+class FrameFileReader;
+
+template <>
+struct SourceTraits<FrameFileReader> {
+  using Output = Image;
+  using OutputChannel = channel::Sender<Output>;
+};
+
+class FrameFileReader : public Source<FrameFileReader> {
 public:
   FrameFileReader(FileParams params, Logger logger, FramesSender output);
 

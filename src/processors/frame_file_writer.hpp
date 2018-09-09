@@ -14,7 +14,15 @@ namespace shar {
 
 using FramesReceiver = channel::Receiver<Image>;
 
-class FrameFileWriter : public Sink<FrameFileWriter, FramesReceiver> {
+class FrameFileWriter;
+
+template <>
+struct SinkTraits<FrameFileWriter> {
+  using Input = Image;
+  using InputChannel = channel::Receiver<Input>;
+};
+
+class FrameFileWriter : public Sink<FrameFileWriter> {
 public:
   FrameFileWriter(const std::string& path, Logger logger, FramesReceiver input);
   void process(shar::Image frame);

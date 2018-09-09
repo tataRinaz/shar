@@ -12,10 +12,15 @@ add_executable(client
                ../codecs/convert.hpp
                ../codecs/ffmpeg/decoder.cpp
                ../codecs/ffmpeg/decoder.hpp
+               ../channels/bounded.hpp
+               ../processors/processor.hpp
+               ../processors/processor.cpp
                ../processors/packet_receiver.cpp
                ../processors/packet_receiver.hpp
                ../processors/h264decoder.cpp
                ../processors/h264decoder.hpp
+               ../processors/frame_display.cpp
+               ../processors/frame_display.hpp
                ../primitives/image.cpp
                ../primitives/image.hpp
                )

@@ -22,9 +22,17 @@ using Milliseconds = std::chrono::milliseconds;
 
 namespace shar {
 
+class ScreenCapture;
+
+template <>
+struct SourceTraits<ScreenCapture> {
+  using Output = Image;
+  using OutputChannel = channel::Sender<Output>;
+};
+
 using FramesSender = channel::Sender<Image>;
 
-class ScreenCapture : public Source<ScreenCapture, FramesSender> {
+class ScreenCapture : public Source<ScreenCapture> {
 public:
   ScreenCapture(const Milliseconds& interval,
                 const sc::Monitor& monitor,

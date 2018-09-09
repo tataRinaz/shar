@@ -84,6 +84,7 @@ struct State {
 template<typename T>
 class Receiver {
 public:
+  using Item = T;
   using StatePtr = std::shared_ptr<detail::State<T>>;
 
   Receiver(StatePtr state)
@@ -131,6 +132,7 @@ private:
 template<typename T>
 class Sender {
 public:
+  using Item = T;
   using StatePtr = std::shared_ptr<detail::State<T>>;
 
   Sender(StatePtr state)
